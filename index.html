@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排水法測量體積實驗室</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+    min-height: 100vh;
+    color: white;
+    overflow-x: hidden;
+  }
+
+  .header {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+  }
+
+  .header h1 {
+    font-size: 2em;
+    color: #00d4ff;
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+  }
+
+  .header p {
+    color: #aaa;
+    margin-top: 5px;
+  }
+
+  /* 關卡切換 */
+  .level-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .tab-btn {
+    padding: 12px 30px;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+  }
+
+  .tab-btn.active {
+    background: #00d4ff;
+    border-color: #00d4ff;
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(0,212,255,0.5);
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: rgba(255,255,255,0.2);
+  }
+
+  /* 關卡內容 */
+  .level-content {
+    display: none;
+    padding: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .level-content.active {
+    display: block;
+  }
+
+  .level-title {
+    text-align: center;
+    font-size: 1.5em;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255,215,0,0.5);
+  }
+
+  /* 實驗區域 */
+  .experiment-area {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* 說明面板 */
+  .instruction-panel {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 20px;
+    width: 280px;
+    flex-shrink: 0;
+  }
+
+  .instruction-panel h3 {
+    color: #00d4ff;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+    padding-bottom: 8px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    border-left: 3px solid #00d4ff;
+  }
+
+  .step-num {
+    background: #00d4ff;
+    color: #000;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8em;
+    flex-shrink: 0;
+  }
+
+  .step p {
+    font-size: 0.85em;
+    color: #ddd;
+    line-height: 1.4;
+  }
+
+  /* 量筒區域 */
+  .cylinders-area {
+    display: flex;
+    gap: 40px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .cylinder-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cylinder-label {
+    font-size: 0.9em;
+    color: #aaa;
+    text-align: center;
+  }
+
+  /* SVG 量筒 */
+  .cylinder-svg {
+    cursor: pointer;
+    filter: drop-shadow(0 0 10px rgba(0,150,255,0.3));
+    transition: filter 0.3s;
+  }
+
+  .cylinder-svg:hover {
+    filter: drop-shadow(0 0 15px rgba(0,212,255,0.6));
+  }
+
+  /* 物體展示區 */
+  .objects-panel {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 20px;
+    width: 250px;
+    flex-shrink: 0;
+  }
+
+  .objects-panel h3 {
+    color: #ffd700;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255,215,0,0.3);
+    padding-bottom: 8px;
+    text-align: center;
+  }
+
+  .object-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .object-item:hover {
+    border-color: #ffd700;
+    background: rgba(255,215,0,0.1);
+  }
+
+  .object-item.selected {
+    border-color: #00ff88;
+    background: rgba(0,255,136,0.1);
+    box-shadow: 0 0 15px rgba(0,255,136,0.3);
+  }
+
+  .object-item svg {
+    margin-bottom: 8px;
+  }
+
+  .object-name {
+    font-size: 0.9em;
+    color: #ddd;
+  }
+
+  .object-hint {
+    font-size: 0.75em;
+    color: #888;
+    margin-top: 3px;
+    text-align: center;
+  }
+
+  /* 動作按鈕 */
+  .action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .action-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95em;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: bold;
+  }
+
+  .btn-put {
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: white;
+  }
+
+  .btn-put:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,180,216,0.4);
+  }
+
+  .btn-put:disabled {
+    background: #444;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-reset {
+    background: linear-gradient(135deg, #e63946, #c1121f);
+    color: white;
+  }
+
+  .btn-reset:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(230,57,70,0.4);
+  }
+
+  /* 讀數顯示 */
+  .readings {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px;
+    padding: 15px;
+    width: 100%;
+  }
+
+  .readings h4 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+  }
+
+  .reading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.9em;
+  }
+
+  .reading-row:last-child {
+    border-bottom: none;
+  }
+
+  .reading-label {
+    color: #aaa;
+  }
+
+  .reading-value {
+    color: #00d4ff;
+    font-weight: bold;
+    font-size: 1em;
+  }
+
+  .reading-value.highlight {
+    color: #00ff88;
+    font-size: 1.1em;
+  }
+
+  /* 答題區 */
+  .answer-section {
+    margin-top: 30px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+  }
+
+  .answer-section h3 {
+    color: #ffd700;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+  }
+
+  .answer-input-area {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .answer-input-area label {
+    font-size: 1em;
+    color: #ddd;
+  }
+
+  .answer-input {
+    padding: 10px 15px;
+    font-size: 1.1em;
+    border: 2px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    border-radius: 10px;
+    width: 120px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .answer-input:focus {
+    border-color: #00d4ff;
+  }
+
+  .unit-label {
+    font-size: 1em;
+    color: #aaa;
+  }
+
+  .submit-btn {
+    padding: 10px 25px;
+    background: linear-gradient(135deg, #06d6a0, #028090);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(6,214,160,0.4);
+  }
+
+  /* 結果訊息 */
+  .result-message {
+    margin-top: 15px;
+    padding: 15px 25px;
+    border-radius: 10px;
+    font-size: 1.3em;
+    font-weight: bold;
+    display: none;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .result-message.correct {
+    background: rgba(0,255,136,0.2);
+    border: 2px solid #00ff88;
+    color: #00ff88;
+    display: block;
+  }
+
+  .result-message.wrong {
+    background: rgba(255,100,100,0.2);
+    border: 2px solid #ff6464;
+    color: #ff6464;
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* 水動畫 */
+  @keyframes waterWave {
+    0% { d: path("M0,0 Q10,3 20,0 Q30,-3 40,0 L40,100 L0,100 Z"); }
+    50% { d: path("M0,0 Q10,-3 20,0 Q30,3 40,0 L40,100 L0,100 Z"); }
+    100% { d: path("M0,0 Q10,3 20,0 Q30,-3 40,0 L40,100 L0,100 Z"); }
+  }
+
+  .water-surface {
+    animation: ripple 2s ease-in-out infinite;
+  }
+
+  @keyframes ripple {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(1.02); }
+  }
+
+  /* 狀態提示 */
+  .status-tip {
+    text-align: center;
+    font-size: 0.85em;
+    color: #888;
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  .status-tip.active-tip {
+    color: #00d4ff;
+  }
+
+  /* 完成徽章 */
+  .complete-badge {
+    display: none;
+    text-align: center;
+    padding: 10px;
+    background: rgba(0,255,136,0.15);
+    border: 2px solid #00ff88;
+    border-radius: 10px;
+    color: #00ff88;
+    font-size: 0.9em;
+    margin-top: 10px;
+  }
+
+  .complete-badge.show {
+    display: block;
+  }
+
+  /* 響應式 */
+  @media (max-width: 768px) {
+    .experiment-area { flex-direction: column; align-items: center; }
+    .instruction-panel, .objects-panel { width: 100%; max-width: 400px; }
+    .cylinders-area { gap: 20px; }
+    .header h1 { font-size: 1.5em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💧 排水法測量體積實驗室</h1>
+  <p>利用排水法（阿基米德原理）測量不規則物體的體積</p>
+</div>
+
+<div class="level-tabs">
+  <button class="tab-btn active" onclick="switchLevel(1)">🪨 第一關：石頭</button>
+  <button class="tab-btn" onclick="switchLevel(2)">🔩 第二關：金屬塊</button>
+</div>
+
+<!-- ========== 第一關：石頭 ========== -->
+<div class="level-content active" id="level1">
+  <div class="level-title">🪨 第一關：測量石頭的體積</div>
+  
+  <div class="experiment-area">
+    
+    <!-- 步驟說明 -->
+    <div class="instruction-panel">
+      <h3>📋 實驗步驟</h3>
+      <div class="step">
+        <div class="step-num">1</div>
+        <p>觀察量筒中的<strong>初始水位</strong>（未放物體前）</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p>點選右側石頭，再按<strong>「放入量筒」</strong></p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p>觀察水位<strong>上升後</strong>的刻度</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <p>計算體積：<br><strong>體積 = 末水位 - 初水位</strong></p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <p>在下方填入答案並提交</p>
+      </div>
+
+      <br>
+
+      <!-- 讀數 -->
+      <div class="readings">
+        <h4>📊 量筒讀數</h4>
+        <div class="reading-row">
+          <span class="reading-label">初始水位</span>
+          <span class="reading-value" id="l1-initial">50 mL</span>
+        </div>
+        <div class="reading-row">
+          <span class="reading-label">放入後水位</span>
+          <span class="reading-value" id="l1-final">-- mL</span>
+        </div>
+        <div class="reading-row">
+          <span class="reading-label">體積差（答案）</span>
+          <span class="reading-value highlight" id="l1-diff">?? mL</span>
+        </div>
+      </div>
+
+      <br>
+      <div class="action-area">
+        <button class="action-btn btn-put" id="l1-put-btn" onclick="putObject(1)" disabled>
+          🪨 放入量筒
+        </button>
+        <button class="action-btn btn-reset" onclick="resetLevel(1)">
+          🔄 重置實驗
+        </button>
+      </div>
+      <div class="status-tip" id="l1-status">請先點選右側的石頭</div>
+    </div>
+
+    <!-- 量筒 -->
+    <div class="cylinders-area">
+      <div class="cylinder-container">
+        <div class="cylinder-label">放入前</div>
+        <svg class="cylinder-svg" width="110" height="320" viewBox="0 0 110 320" id="l1-cylinder-before">
+          <!-- 量筒背景 -->
+          <defs>
+            <linearGradient id="glassGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:rgba(150,200,255,0.15)"/>
+              <stop offset="40%" style="stop-color:rgba(150,200,255,0.05)"/>
+              <stop offset="100%" style="stop-color:rgba(150,200,255,0.2)"/>
+            </linearGradient>
+            <linearGradient id="waterGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:rgba(0,150,255,0.8)"/>
+              <stop offset="100%" style="stop-color:rgba(0,80,200,0.9)"/>
+            </linearGradient>
+            <clipPath id="clip1">
+              <rect x="15" y="30" width="80" height="260"/>
+            </clipPath>
+          </defs>
+
+          <!-- 量筒底部 -->
+          <ellipse cx="55" cy="295" rx="42" ry="8" fill="rgba(100,150,200,0.4)" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <!-- 量筒左壁 -->
+          <rect x="13" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          <!-- 量筒右壁 -->
+          <rect x="92" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          
+          <!-- 水 (初始50mL，佔總高的50%) -->
+          <!-- 總高260px，50mL對應到y=295-(50/100)*260=165 -->
+          <rect x="18" y="165" width="74" height="130" fill="url(#waterGrad1)" clip-path="url(#clip1)" class="water-surface"/>
+          <!-- 水面 -->
+          <ellipse cx="55" cy="165" rx="37" ry="5" fill="rgba(100,200,255,0.9)"/>
+
+          <!-- 刻度線 -->
+          <!-- 每10mL一格，總100mL，260px高度 -->
+          <!-- y = 295 - (mL/100)*260 -->
+          <g stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="white" font-size="11" font-family="Arial">
+            <!-- 100mL: y=35 -->
+            <line x1="18" y1="35" x2="35" y2="35"/><text x="37" y="39" fill="rgba(255,255,255,0.8)">100</text>
+            <!-- 90mL: y=61 -->
+            <line x1="18" y1="61" x2="30" y2="61"/><text x="32" y="65" fill="rgba(255,255,255,0.7)">90</text>
+            <!-- 80mL: y=87 -->
+            <line x1="18" y1="87" x2="35" y2="87"/><text x="37" y="91" fill="rgba(255,255,255,0.8)">80</text>
+            <!-- 70mL: y=113 -->
+            <line x1="18" y1="113" x2="30" y2="113"/><text x="32" y="117" fill="rgba(255,255,255,0.7)">70</text>
+            <!-- 60mL: y=139 -->
+            <line x1="18" y1="139" x2="35" y2="139"/><text x="37" y="143" fill="rgba(255,255,255,0.8)">60</text>
+            <!-- 50mL: y=165 (水面) -->
+            <line x1="18" y1="165" x2="35" y2="165" stroke="#00ff88" stroke-width="2"/>
+            <text x="37" y="169" fill="#00ff88" font-weight="bold">50</text>
+            <!-- 40mL: y=191 -->
+            <line x1="18" y1="191" x2="30" y2="191"/><text x="32" y="195" fill="rgba(255,255,255,0.7)">40</text>
+            <!-- 30mL: y=217 -->
+            <line x1="18" y1="217" x2="35" y2="217"/><text x="37" y="221" fill="rgba(255,255,255,0.8)">30</text>
+            <!-- 20mL: y=243 -->
+            <line x1="18" y1="243" x2="30" y2="243"/><text x="32" y="247" fill="rgba(255,255,255,0.7)">20</text>
+            <!-- 10mL: y=269 -->
+            <line x1="18" y1="269" x2="35" y2="269"/><text x="37" y="273" fill="rgba(255,255,255,0.8)">10</text>
+          </g>
+
+          <!-- 量筒上緣 -->
+          <ellipse cx="55" cy="30" rx="42" ry="8" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <!-- 量筒玻璃效果 -->
+          <rect x="18" y="30" width="74" height="265" fill="url(#glassGrad1)" clip-path="url(#clip1)"/>
+          
+          <!-- mL 單位 -->
+          <text x="55" y="315" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10">mL</text>
+        </svg>
+        <div class="cylinder-label" style="color:#00ff88">初始水位：50 mL</div>
+      </div>
+
+      <!-- 箭頭 -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:50px;gap:10px">
+        <div id="l1-arrow" style="font-size:2em;opacity:0.3;transition:all 0.5s">➡️</div>
+        <div style="font-size:0.8em;color:#888;text-align:center">放入<br>石頭</div>
+      </div>
+
+      <!-- 放入後的量筒 -->
+      <div class="cylinder-container">
+        <div class="cylinder-label">放入後</div>
+        <svg class="cylinder-svg" width="110" height="320" viewBox="0 0 110 320" id="l1-cylinder-after">
+          <defs>
+            <linearGradient id="waterGrad1b" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:rgba(0,150,255,0.8)"/>
+              <stop offset="100%" style="stop-color:rgba(0,80,200,0.9)"/>
+            </linearGradient>
+            <clipPath id="clip1b">
+              <rect x="15" y="30" width="80" height="260"/>
+            </clipPath>
+          </defs>
+
+          <ellipse cx="55" cy="295" rx="42" ry="8" fill="rgba(100,150,200,0.4)" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="13" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          <rect x="92" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          
+          <!-- 水位先設為50mL（還沒放入），放入後會用JS更新 -->
+          <rect x="18" id="l1-water-rect" y="165" width="74" height="130" fill="url(#waterGrad1b)" clip-path="url(#clip1b)" class="water-surface"/>
+          <ellipse cx="55" id="l1-water-top" cy="165" rx="37" ry="5" fill="rgba(100,200,255,0.9)"/>
+
+          <!-- 石頭（隱藏，放入後顯示） -->
+          <g id="l1-rock" style="display:none">
+            <!-- 不規則石頭形狀 -->
+            <polygon points="38,240 32,255 40,268 55,272 68,265 74,252 66,240 55,236" 
+                     fill="#8B7355" stroke="#6B5335" stroke-width="1.5"/>
+            <polygon points="42,242 38,252 45,260 55,263 65,258 68,248 60,241 50,239" 
+                     fill="#A0876A" opacity="0.6"/>
+            <!-- 石頭紋理 -->
+            <circle cx="48" cy="252" r="2" fill="#6B5335" opacity="0.5"/>
+            <circle cx="60" cy="256" r="1.5" fill="#6B5335" opacity="0.5"/>
+            <line x1="42" y1="248" x2="52" y2="256" stroke="#6B5335" stroke-width="1" opacity="0.4"/>
+          </g>
+
+          <!-- 刻度線 -->
+          <g stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="white" font-size="11" font-family="Arial">
+            <line x1="18" y1="35" x2="35" y2="35"/><text x="37" y="39" fill="rgba(255,255,255,0.8)">100</text>
+            <line x1="18" y1="61" x2="30" y2="61"/><text x="32" y="65" fill="rgba(255,255,255,0.7)">90</text>
+            <line x1="18" y1="87" x2="35" y2="87"/><text x="37" y="91" fill="rgba(255,255,255,0.8)">80</text>
+            <line x1="18" y1="113" x2="30" y2="113"/><text x="32" y="117" fill="rgba(255,255,255,0.7)">70</text>
+            <line x1="18" y1="139" x2="35" y2="139"/><text x="37" y="143" fill="rgba(255,255,255,0.8)">60</text>
+            <line x1="18" y1="165" x2="35" y2="165"/><text x="37" y="169" fill="rgba(255,255,255,0.8)">50</text>
+            <line x1="18" y1="191" x2="30" y2="191"/><text x="32" y="195" fill="rgba(255,255,255,0.7)">40</text>
+            <line x1="18" y1="217" x2="35" y2="217"/><text x="37" y="221" fill="rgba(255,255,255,0.8)">30</text>
+            <line x1="18" y1="243" x2="30" y2="243"/><text x="32" y="247" fill="rgba(255,255,255,0.7)">20</text>
+            <line x1="18" y1="269" x2="35" y2="269"/><text x="37" y="273" fill="rgba(255,255,255,0.8)">10</text>
+            <!-- 新水位標記（動態，預設隱藏） -->
+            <line x1="18" id="l1-new-mark" y1="165" x2="35" y2="165" stroke="#ff6464" stroke-width="2" opacity="0"/>
+            <text id="l1-new-label" x="37" y="169" fill="#ff6464" font-weight="bold" opacity="0">50</text>
+          </g>
+
+          <ellipse cx="55" cy="30" rx="42" ry="8" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="18" y="30" width="74" height="265" fill="url(#glassGrad1)" clip-path="url(#clip1b)" opacity="0.3"/>
+          <text x="55" y="315" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10">mL</text>
+        </svg>
+        <div class="cylinder-label" id="l1-after-label" style="color:#aaa">等待放入石頭...</div>
+      </div>
+    </div>
+
+    <!-- 物體選擇 -->
+    <div class="objects-panel">
+      <h3>🎯 選擇物體</h3>
+      
+      <div class="object-item" id="l1-obj-rock" onclick="selectObject(1, 'rock')">
+        <!-- 石頭SVG -->
+        <svg width="80" height="60" viewBox="0 0 80 60">
+          <polygon points="20,40 15,52 22,58 40,60 58,55 65,44 55,35 40,30 28,32" 
+                   fill="#8B7355" stroke="#6B5335" stroke-width="2"/>
+          <polygon points="25,38 20,47 28,53 40,55 52,50 57,42 48,36 38,33" 
+                   fill="#A0876A" opacity="0.7"/>
+          <circle cx="32" cy="45" r="3" fill="#6B5335" opacity="0.5"/>
+          <circle cx="48" cy="48" r="2" fill="#6B5335" opacity="0.4"/>
+          <line x1="28" y1="42" x2="38" y2="50" stroke="#6B5335" stroke-width="1.5" opacity="0.4"/>
+          <line x1="44" y1="38" x2="52" y2="46" stroke="#6B5335" stroke-width="1" opacity="0.3"/>
+        </svg>
+        <div class="object-name">🪨 石頭</div>
+        <div class="object-hint">不規則形狀</div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-top:5px;">
+        <p style="font-size:0.8em;color:#888;text-align:center;margin-bottom:8px">📌 實驗條件</p>
+        <p style="font-size:0.85em;color:#ccc;text-align:center">初始水位：<strong style="color:#00d4ff">50 mL</strong></p>
+        <p style="font-size:0.8em;color:#888;text-align:center;margin-top:5px">石頭體積 = ?</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 答題區 -->
+  <div class="answer-section">
+    <h3>✏️ 計算並填寫石頭的體積</h3>
+    <div class="answer-input-area">
+      <label>石頭體積 =</label>
+      <input type="number" class="answer-input" id="l1-answer" placeholder="?" min="0" max="100">
+      <span class="unit-label">mL</span>
+      <button class="submit-btn" onclick="checkAnswer(1)">✅ 提交答案</button>
+    </div>
+    <div class="result-message" id="l1-result"></div>
+    <div class="complete-badge" id="l1-badge">🎉 第一關完成！石頭體積已測量成功！</div>
+  </div>
+</div>
+
+
+<!-- ========== 第二關：金屬塊 ========== -->
+<div class="level-content" id="level2">
+  <div class="level-title">🔩 第二關：測量金屬塊的體積</div>
+  
+  <div class="experiment-area">
+    
+    <!-- 步驟說明 -->
+    <div class="instruction-panel">
+      <h3>📋 實驗步驟</h3>
+      <div class="step">
+        <div class="step-num">1</div>
+        <p>觀察量筒中的<strong>初始水位</strong>（未放物體前）</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <p>點選右側金屬塊，再按<strong>「放入量筒」</strong></p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <p>觀察水位<strong>上升後</strong>的刻度</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <p>計算體積：<br><strong>體積 = 末水位 - 初水位</strong></p>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <p>在下方填入答案並提交</p>
+      </div>
+
+      <br>
+
+      <!-- 讀數 -->
+      <div class="readings">
+        <h4>📊 量筒讀數</h4>
+        <div class="reading-row">
+          <span class="reading-label">初始水位</span>
+          <span class="reading-value" id="l2-initial">30 mL</span>
+        </div>
+        <div class="reading-row">
+          <span class="reading-label">放入後水位</span>
+          <span class="reading-value" id="l2-final">-- mL</span>
+        </div>
+        <div class="reading-row">
+          <span class="reading-label">體積差（答案）</span>
+          <span class="reading-value highlight" id="l2-diff">?? mL</span>
+        </div>
+      </div>
+
+      <br>
+      <div class="action-area">
+        <button class="action-btn btn-put" id="l2-put-btn" onclick="putObject(2)" disabled>
+          🔩 放入量筒
+        </button>
+        <button class="action-btn btn-reset" onclick="resetLevel(2)">
+          🔄 重置實驗
+        </button>
+      </div>
+      <div class="status-tip" id="l2-status">請先點選右側的金屬塊</div>
+    </div>
+
+    <!-- 量筒 -->
+    <div class="cylinders-area">
+      <div class="cylinder-container">
+        <div class="cylinder-label">放入前</div>
+        <svg class="cylinder-svg" width="110" height="320" viewBox="0 0 110 320" id="l2-cylinder-before">
+          <defs>
+            <linearGradient id="waterGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:rgba(0,150,255,0.8)"/>
+              <stop offset="100%" style="stop-color:rgba(0,80,200,0.9)"/>
+            </linearGradient>
+            <clipPath id="clip2">
+              <rect x="15" y="30" width="80" height="260"/>
+            </clipPath>
+          </defs>
+
+          <ellipse cx="55" cy="295" rx="42" ry="8" fill="rgba(100,150,200,0.4)" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="13" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          <rect x="92" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          
+          <!-- 初始30mL: y = 295 - (30/100)*260 = 295-78 = 217 -->
+          <rect x="18" y="217" width="74" height="78" fill="url(#waterGrad2)" clip-path="url(#clip2)" class="water-surface"/>
+          <ellipse cx="55" cy="217" rx="37" ry="5" fill="rgba(100,200,255,0.9)"/>
+
+          <g stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="white" font-size="11" font-family="Arial">
+            <line x1="18" y1="35" x2="35" y2="35"/><text x="37" y="39" fill="rgba(255,255,255,0.8)">100</text>
+            <line x1="18" y1="61" x2="30" y2="61"/><text x="32" y="65" fill="rgba(255,255,255,0.7)">90</text>
+            <line x1="18" y1="87" x2="35" y2="87"/><text x="37" y="91" fill="rgba(255,255,255,0.8)">80</text>
+            <line x1="18" y1="113" x2="30" y2="113"/><text x="32" y="117" fill="rgba(255,255,255,0.7)">70</text>
+            <line x1="18" y1="139" x2="35" y2="139"/><text x="37" y="143" fill="rgba(255,255,255,0.8)">60</text>
+            <line x1="18" y1="165" x2="35" y2="165"/><text x="37" y="169" fill="rgba(255,255,255,0.8)">50</text>
+            <line x1="18" y1="191" x2="30" y2="191"/><text x="32" y="195" fill="rgba(255,255,255,0.7)">40</text>
+            <line x1="18" y1="217" x2="35" y2="217" stroke="#00ff88" stroke-width="2"/>
+            <text x="37" y="221" fill="#00ff88" font-weight="bold">30</text>
+            <line x1="18" y1="243" x2="30" y2="243"/><text x="32" y="247" fill="rgba(255,255,255,0.7)">20</text>
+            <line x1="18" y1="269" x2="35" y2="269"/><text x="37" y="273" fill="rgba(255,255,255,0.8)">10</text>
+          </g>
+
+          <ellipse cx="55" cy="30" rx="42" ry="8" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="18" y="30" width="74" height="265" fill="url(#glassGrad1)" clip-path="url(#clip2)" opacity="0.3"/>
+          <text x="55" y="315" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10">mL</text>
+        </svg>
+        <div class="cylinder-label" style="color:#00ff88">初始水位：30 mL</div>
+      </div>
+
+      <!-- 箭頭 -->
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding-bottom:50px;gap:10px">
+        <div id="l2-arrow" style="font-size:2em;opacity:0.3;transition:all 0.5s">➡️</div>
+        <div style="font-size:0.8em;color:#888;text-align:center">放入<br>金屬塊</div>
+      </div>
+
+      <!-- 放入後的量筒 -->
+      <div class="cylinder-container">
+        <div class="cylinder-label">放入後</div>
+        <svg class="cylinder-svg" width="110" height="320" viewBox="0 0 110 320" id="l2-cylinder-after">
+          <defs>
+            <linearGradient id="waterGrad2b" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:rgba(0,150,255,0.8)"/>
+              <stop offset="100%" style="stop-color:rgba(0,80,200,0.9)"/>
+            </linearGradient>
+            <clipPath id="clip2b">
+              <rect x="15" y="30" width="80" height="260"/>
+            </clipPath>
+          </defs>
+
+          <ellipse cx="55" cy="295" rx="42" ry="8" fill="rgba(100,150,200,0.4)" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="13" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          <rect x="92" y="30" width="5" height="267" fill="rgba(150,200,255,0.2)" stroke="rgba(150,200,255,0.5)" stroke-width="1"/>
+          
+          <rect x="18" id="l2-water-rect" y="217" width="74" height="78" fill="url(#waterGrad2b)" clip-path="url(#clip2b)" class="water-surface"/>
+          <ellipse cx="55" id="l2-water-top" cy="217" rx="37" ry="5" fill="rgba(100,200,255,0.9)"/>
+
+          <!-- 金屬塊（隱藏，放入後顯示） -->
+          <g id="l2-metal" style="display:none">
+            <rect x="33" y="240" width="44" height="35" rx="3" fill="#708090" stroke="#4A5568" stroke-width="2"/>
+            <rect x="36" y="243" width="38" height="29" rx="2" fill="#8090A0" opacity="0.7"/>
+            <!-- 金屬光澤 -->
+            <rect x="37" y="244" width="15" height="8" rx="1" fill="rgba(255,255,255,0.2)"/>
+            <!-- 螺絲孔 -->
+            <circle cx="40" cy="258" r="3" fill="#4A5568"/>
+            <circle cx="70" cy="258" r="3" fill="#4A5568"/>
+            <line x1="38" y1="256" x2="42" y2="260" stroke="#3A4558" stroke-width="1"/>
+            <line x1="68" y1="256" x2="72" y2="260" stroke="#3A4558" stroke-width="1"/>
+          </g>
+
+          <g stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="white" font-size="11" font-family="Arial">
+            <line x1="18" y1="35" x2="35" y2="35"/><text x="37" y="39" fill="rgba(255,255,255,0.8)">100</text>
+            <line x1="18" y1="61" x2="30" y2="61"/><text x="32" y="65" fill="rgba(255,255,255,0.7)">90</text>
+            <line x1="18" y1="87" x2="35" y2="87"/><text x="37" y="91" fill="rgba(255,255,255,0.8)">80</text>
+            <line x1="18" y1="113" x2="30" y2="113"/><text x="32" y="117" fill="rgba(255,255,255,0.7)">70</text>
+            <line x1="18" y1="139" x2="35" y2="139"/><text x="37" y="143" fill="rgba(255,255,255,0.8)">60</text>
+            <line x1="18" y1="165" x2="35" y2="165"/><text x="37" y="169" fill="rgba(255,255,255,0.8)">50</text>
+            <line x1="18" y1="191" x2="30" y2="191"/><text x="32" y="195" fill="rgba(255,255,255,0.7)">40</text>
+            <line x1="18" y1="217" x2="35" y2="217"/><text x="37" y="221" fill="rgba(255,255,255,0.8)">30</text>
+            <line x1="18" y1="243" x2="30" y2="243"/><text x="32" y="247" fill="rgba(255,255,255,0.7)">20</text>
+            <line x1="18" y1="269" x2="35" y2="269"/><text x="37" y="273" fill="rgba(255,255,255,0.8)">10</text>
+            <line x1="18" id="l2-new-mark" y1="217" x2="35" y2="217" stroke="#ff6464" stroke-width="2" opacity="0"/>
+            <text id="l2-new-label" x="37" y="221" fill="#ff6464" font-weight="bold" opacity="0">30</text>
+          </g>
+
+          <ellipse cx="55" cy="30" rx="42" ry="8" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="2"/>
+          <rect x="18" y="30" width="74" height="265" fill="url(#glassGrad1)" clip-path="url(#clip2b)" opacity="0.3"/>
+          <text x="55" y="315" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="10">mL</text>
+        </svg>
+        <div class="cylinder-label" id="l2-after-label" style="color:#aaa">等待放入金屬塊...</div>
+      </div>
+    </div>
+
+    <!-- 物體選擇 -->
+    <div class="objects-panel">
+      <h3>🎯 選擇物體</h3>
+      
+      <div class="object-item" id="l2-obj-metal" onclick="selectObject(2, 'metal')">
+        <svg width="80" height="60" viewBox="0 0 80 60">
+          <rect x="15" y="15" width="50" height="35" rx="4" fill="#708090" stroke="#4A5568" stroke-width="2"/>
+          <rect x="19" y="19" width="42" height="27" rx="3" fill="#8090A0" opacity="0.7"/>
+          <rect x="20" y="20" width="18" height="10" rx="2" fill="rgba(255,255,255,0.25)"/>
+          <circle cx="26" cy="35" r="4" fill="#4A5568"/>
+          <circle cx="54" cy="35" r="4" fill="#4A5568"/>
+          <line x1="24" y1="33" x2="28" y2="37" stroke="#3A4558" stroke-width="1.5"/>
+          <line x1="52" y1="33" x2="56" y2="37" stroke="#3A4558" stroke-width="1.5"/>
+        </svg>
+        <div class="object-name">🔩 金屬塊</div>
+        <div class="object-hint">規則長方體形狀</div>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px;margin-top:5px;">
+        <p style="font-size:0.8em;color:#888;text-align:center;margin-bottom:8px">📌 實驗條件</p>
+        <p style="font-size:0.85em;color:#ccc;text-align:center">初始水位：<strong style="color:#00d4ff">30 mL</strong></p>
+        <p style="font-size:0.8em;color:#888;text-align:center;margin-top:5px">金屬塊體積 = ?</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 答題區 -->
+  <div class="answer-section">
+    <h3>✏️ 計算並填寫金屬塊的體積</h3>
+    <div class="answer-input-area">
+      <label>金屬塊體積 =</label>
+      <input type="number" class="answer-input" id="l2-answer" placeholder="?" min="0" max="100">
+      <span class="unit-label">mL</span>
+      <button class="submit-btn" onclick="checkAnswer(2)">✅ 提交答案</button>
+    </div>
+    <div class="result-message" id="l2-result"></div>
+    <div class="complete-badge" id="l2-badge">🎉 第二關完成！金屬塊體積已測量成功！</div>
+  </div>
+</div>
+
+
+<script>
+  // ===== 實驗數據設定 =====
+  // 第一關：石頭，初始水位50mL，石頭體積25mL，放入後75mL
+  // 第二關：金屬塊，初始水位30mL，金屬塊體積45mL，放入後75mL
+
+  const levelData = {
+    1: {
+      initialWater: 50,
+      objectVolume: 25,
+      finalWater: 75,
+      objectSelected: false,
+      objectPlaced: false
+    },
+    2: {
+      initialWater: 30,
+      objectVolume: 45,
+      finalWater: 75,
+      objectSelected: false,
+      objectPlaced: false
+    }
+  };
+
+  // mL 轉換為 SVG y座標
+  // y = 295 - (mL/100)*260
+  function mlToY(ml) {
+    return 295 - (ml / 100) * 260;
+  }
+
+  // ===== 切換關卡 =====
+  function switchLevel(level) {
+    document.querySelectorAll('.level-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('level' + level).classList.add('active');
+    document.querySelectorAll('.tab-btn')[level - 1].classList.add('active');
+  }
+
+  // ===== 選擇物體 =====
+  function selectObject(level, type) {
+    if (levelData[level].objectPlaced) return;
+
+    levelData[level].objectSelected = true;
+
+    if (level === 1) {
+      document.getElementById('l1-obj-rock').classList.add('selected');
+      document.getElementById('l1-put-btn').disabled = false;
+      document.getElementById('l1-status').textContent = '✅ 石頭已選擇！點擊「放入量筒」按鈕';
+      document.getElementById('l1-status').classList.add('active-tip');
+    } else {
+      document.getElementById('l2-obj-metal').classList.add('selected');
+      document.getElementById('l2-put-btn').disabled = false;
+      document.getElementById('l2-status').textContent = '✅ 金屬塊已選擇！點擊「放入量筒」按鈕';
+      document.getElementById('l2-status').classList.add('active-tip');
+    }
+  }
+
+  // ===== 放入物體 =====
+  function putObject(level) {
+    if (!levelData[level].objectSelected || levelData[level].objectPlaced) return;
+
+    levelData[level].objectPlaced = true;
+    const data = levelData[level];
+    const finalY = mlToY(data.finalWater);
+    const waterHeight = 295 - finalY;
+
+    if (level === 1) {
+      document.getElementById('l1-put-btn').disabled = true;
+      document.getElementById('l1-arrow').style.opacity = '1';
+
+      // 動畫更新水位
+      animateWater('l1-water-rect', 'l1-water-top', finalY, waterHeight, () => {
+        // 顯示石頭
+        document.getElementById('l1-rock').style.display = 'block';
+        // 更新新水位刻度標記
+        const markEl = document.getElementById('l1-new-mark');
+        const labelEl = document.getElementById('l1-new-label');
+        markEl.setAttribute('y1', finalY);
+        markEl.setAttribute('y2', finalY);
+        markEl.setAttribute('opacity', '1');
+        labelEl.setAttribute('y', finalY + 4);
+        labelEl.textContent = data.finalWater;
+        labelEl.setAttribute('opacity', '1');
+        // 更新讀數
+        document.getElementById('l1-final').textContent = data.finalWater + ' mL';
+        document.getElementById('l1-diff').textContent = data.objectVolume + ' mL';
+        document.getElementById('l1-after-label').textContent = '末水位：' + data.finalWater + ' mL';
+        document.getElementById('l1-after-label').style.color = '#ff6464';
+        document.getElementById('l1-status').textContent = '🔍 水位已上升！請計算體積差並填寫答案';
+      });
+
+    } else {
+      document.getElementById('l2-put-btn').disabled = true;
+      document.getElementById('l2-arrow').style.opacity = '1';
+
+      animateWater('l2-water-rect', 'l2-water-top', finalY, waterHeight, () => {
+        document.getElementById('l2-metal').style.display = 'block';
+        const markEl = document.getElementById('l2-new-mark');
+        const labelEl = document.getElementById('l2-new-label');
+        markEl.setAttribute('y1', finalY);
+        markEl.setAttribute('y2', finalY);
+        markEl.setAttribute('opacity', '1');
+        labelEl.setAttribute('y', finalY + 4);
+        labelEl.textContent = data.finalWater;
+        labelEl.setAttribute('opacity', '1');
+        document.getElementById('l2-final').textContent = data.finalWater + ' mL';
+        document.getElementById('l2-diff').textContent = data.objectVolume + ' mL';
+        document.getElementById('l2-after-label').textContent = '末水位：' + data.finalWater + ' mL';
+        document.getElementById('l2-after-label').style.color = '#ff6464';
+        document.getElementById('l2-status').textContent = '🔍 水位已上升！請計算體積差並填寫答案';
+      });
+    }
+  }
+
+  // ===== 水位動畫 =====
+  function animateWater(rectId, topId, targetY, targetHeight, callback) {
+    const rect = document.getElementById(rectId);
+    const top = document.getElementById(topId);
+    
+    const startY = parseFloat(rect.getAttribute('y'));
+    const startH = parseFloat(rect.getAttribute('height'));
+    const duration = 800;
+    const startTime = performance.now();
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeInOut
+      const ease = progress < 0.5 
+        ? 2 * progress * progress 
+        : -1 + (4 - 2 * progress) * progress;
+
+      const currentY = startY + (targetY - startY) * ease;
+      const currentH = startH + (targetHeight - startH) * ease;
+
+      rect.setAttribute('y', currentY);
+      rect.setAttribute('height', currentH);
+      top.setAttribute('cy', currentY);
+
+      if (progress < 1) {
+        requestAnimationFrame(step);
+      } else {
+        if (callback) callback();
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  // ===== 檢查答案 =====
+  function checkAnswer(level) {
+    const input = document.getElementById('l' + level + '-answer');
+    const result = document.getElementById('l' + level + '-result');
+    const badge = document.getElementById('l' + level + '-badge');
+    const answer = parseInt(input.value);
+    const correct = levelData[level].objectVolume;
+
+    result.className = 'result-message';
+    result.style.display = 'none';
+
+    if (isNaN(answer) || input.value === '') {
+      result.textContent = '⚠️ 請輸入數字！';
+      result.style.background = 'rgba(255,200,0,0.2)';
+      result.style.border = '2px solid #ffd700';
+      result.style.color = '#ffd700';
+      result.style.display = 'block';
+      return;
+    }
+
+    setTimeout(() => {
+      if (answer === correct) {
+        result.textContent = '✅ Correct！太棒了！' + (level === 1 ? '石頭' : '金屬塊') + '的體積是 ' + correct + ' mL！';
+        result.classList.add('correct');
+        badge.classList.add('show');
+        // 彩帶效果
+        createConfetti();
+      } else {
+        result.textContent = '❌ Try Again！再想想看，體積 = 末水位 - 初水位';
+        result.classList.add('wrong');
+        // 震動動畫
+        input.style.animation = 'none';
+        input.style.borderColor = '#ff6464';
+        setTimeout(() => {
+          input.style.borderColor = '';
+        }, 1000);
+      }
+    }, 100);
+  }
+
+  // ===== 重置 =====
+  function resetLevel(level) {
+    levelData[level].objectSelected = false;
+    levelData[level].objectPlaced = false;
+
+    if (level === 1) {
+      const initialY = mlToY(50);
+      const initialH = 295 - initialY;
+      document.getElementById('l1-water-rect').setAttribute('y', initialY);
+      document.getElementById('l1-water-rect').setAttribute('height', initialH);
+      document.getElementById('l1-water-top').setAttribute('cy', initialY);
+      document.getElementById('l1-rock').style.display = 'none';
+      document.getElementById('l1-new-mark').setAttribute('opacity', '0');
+      document.getElementById('l1-new-label').setAttribute('opacity', '0');
+      document.getElementById('l1-final').textContent = '-- mL';
+      document.getElementById('l1-diff').textContent = '?? mL';
+      document.getElementById('l1-after-label').textContent = '等待放入石頭...';
+      document.getElementById('l1-after-label').style.color = '#aaa';
+      document.getElementById('l1-put-btn').disabled = true;
+      document.getElementById('l1-obj-rock').classList.remove('selected');
+      document.getElementById('l1-arrow').style.opacity = '0.3';
+      document.getElementById('l1-status').textContent = '請先點選右側的石頭';
+      document.getElementById('l1-status').classList.remove('active-tip');
+      document.getElementById('l1-answer').value = '';
+      document.getElementById('l1-result').className = 'result-message';
+      document.getElementById('l1-result').style.display = 'none';
+      document.getElementById('l1-badge').classList.remove('show');
+    } else {
+      const initialY = mlToY(30);
+      const initialH = 295 - initialY;
+      document.getElementById('l2-water-rect').setAttribute('y', initialY);
+      document.getElementById('l2-water-rect').setAttribute('height', initialH);
+      document.getElementById('l2-water-top').setAttribute('cy', initialY);
+      document.getElementById('l2-metal').style.display = 'none';
+      document.getElementById('l2-new-mark').setAttribute('opacity', '0');
+      document.getElementById('l2-new-label').setAttribute('opacity', '0');
+      document.getElementById('l2-final').textContent = '-- mL';
+      document.getElementById('l2-diff').textContent = '?? mL';
+      document.getElementById('l2-after-label').textContent = '等待放入金屬塊...';
+      document.getElementById('l2-after-label').style.color = '#aaa';
+      document.getElementById('l2-put-btn').disabled = true;
+      document.getElementById('l2-obj-metal').classList.remove('selected');
+      document.getElementById('l2-arrow').style.opacity = '0.3';
+      document.getElementById('l2-status').textContent = '請先點選右側的金屬塊';
+      document.getElementById('l2-status').classList.remove('active-tip');
+      document.getElementById('l2-answer').value = '';
+      document.getElementById('l2-result').className = 'result-message';
+      document.getElementById('l2-result').style.display = 'none';
+      document.getElementById('l2-badge').classList.remove('show');
+    }
+  }
+
+  // ===== 彩帶效果 =====
+  function createConfetti() {
+    const colors = ['#00d4ff', '#ffd700', '#00ff88', '#ff6464', '#ff9ff3'];
+    for (let i = 0; i < 50; i++) {
+      const confetti = document.createElement('div');
+      confetti.style.cssText = `
+        position: fixed;
+        width: ${Math.random() * 10 + 5}px;
+        height: ${Math.random() * 10 + 5}px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        top: -20px;
+        left: ${Math.random() * 100}vw;
+        border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+        z-index: 9999;
+        pointer-events: none;
+        animation: fall ${Math.random() * 2 + 2}s linear forwards;
+      `;
+      document.body.appendChild(confetti);
+      setTimeout(() => confetti.remove(), 4000);
+    }
+  }
+
+  // 彩帶動畫CSS
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes fall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(${Math.random()*720}deg); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Enter鍵提交
+  document.getElementById('l1-answer').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') checkAnswer(1);
+  });
+  document.getElementById('l2-answer').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') checkAnswer(2);
+  });
+</script>
+</body>
+</html>
